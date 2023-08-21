@@ -8,9 +8,6 @@
   "main": "./lib/index.js",
   "types": "./lib/types/index.d.ts",
   "license": "MIT",
-  "files": [
-    "lib/**/*.ts"
-  ],
   "dependencies": {
     "typescript": "^5.1.6"
   },
@@ -29,6 +26,8 @@
   "scripts": {
     "build": "tsc && tsc-alias",
     "build:watch": "tsc && (concurrently \"tsc -w\" \"tsc-alias -w\")",
-    "test:matchers": "jest"
+    "test:matchers": "jest",
+    "prepack": "yarn build",
+    "prepublishOnly": "yarn build"
   }
 }
