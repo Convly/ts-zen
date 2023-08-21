@@ -221,6 +221,10 @@ export const getMatchers = (): MatchersObject => ({
       return this.isUndefined(context);
     }
 
+    if (expected instanceof t.NeverType) {
+      return this.isNever(context);
+    }
+
     // Object can be inherited and should be checked last
     // TODO: Refactor how the redirection are made for t.Type instances
     if (expected instanceof t.ObjectType) {
