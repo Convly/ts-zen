@@ -26,5 +26,8 @@
     "build:watch": "tsc && (concurrently \"tsc -w\" \"tsc-alias -w\")",
     "test:matchers": "jest",
     "prepack": "yarn build"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   }
 }
