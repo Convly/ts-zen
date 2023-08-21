@@ -97,8 +97,14 @@ export class EnumLiteralType extends AbstractLiteralType<BaseType, ts.TypeFlags.
   }
 }
 
-export class BigIntLiteralType extends AbstractLiteralType<bigint, ts.TypeFlags.BigIntLiteral> {
-  constructor(value?: bigint) {
+/**
+ * @experimental
+ */
+export class BigIntLiteralType extends AbstractLiteralType<
+  ts.PseudoBigInt,
+  ts.TypeFlags.BigIntLiteral
+> {
+  constructor(value?: ts.PseudoBigInt) {
     super(ts.TypeFlags.BigIntLiteral, value);
   }
 }
@@ -208,6 +214,18 @@ export class ArrayType extends ObjectType {
   }
 }
 
+export type TemplateValue = (string | StringType | NumberType | BigIntType)[];
+
+export class TemplateLiteral extends AbstractType<ts.TypeFlags.TemplateLiteral> {
+  template?: TemplateValue;
+
+  constructor(template?: TemplateValue) {
+    super(ts.TypeFlags.TemplateLiteral);
+
+    this.template = template;
+  }
+}
+
 export type Type =
   | AnyType
   | ArrayType
@@ -229,57 +247,26 @@ export type Type =
   | ObjectType
   | UnionType
   | IntersectionType
-  | UnionOrIntersectionType;
+  | UnionOrIntersectionType
+  | TemplateLiteral;
 
 // Factories
-
-export const any = (): AnyType => {
-  return new AnyType();
-};
-export const unknown = (): UnknownType => {
-  return new UnknownType();
-};
-
-export const string = (): StringType => {
-  return new StringType();
-};
-
-export const number = (): NumberType => {
-  return new NumberType();
-};
-
-export const boolean = (): BooleanType => {
-  return new BooleanType();
-};
-
-export const enumeration = (): EnumType => {
-  return new EnumType();
-};
-
-export const bigint = (): BigIntType => {
-  return new BigIntType();
-};
-
-export const stringLiteral = (value?: string): StringLiteralType => {
-  return new StringLiteralType(value);
-};
-
-export const numberLiteral = (value?: number): NumberLiteralType => {
-  return new NumberLiteralType(value);
-};
-
-export const booleanLiteral = (value?: boolean): BooleanLiteralType => {
-  return new BooleanLiteralType(value);
-};
-
-export const object = (properties?: Record<string, Type>): ObjectType => {
-  return new ObjectType(properties);
-};
-
-export const union = (types?: Type[]): UnionType => {
-  return new UnionType(types);
-};
-
-export const array = (type?: Type): ArrayType => {
-  return new ArrayType(type);
+export default {
+  array: (type?: Type) => new ArrayType(type),
+  bigInt: () => new BigIntType(),
+  bigIntLiteral: (value?: ts.PseudoBigInt) => new BigIntLiteralType(value),
+  boolean: () => new BooleanType(),
+  booleanLiteral: (value?: boolean) => new BooleanLiteralType(value),
+  never: () => new NeverType(),
+  null: () => new NullType(),
+  number: () => new NumberType(),
+  numberLiteral: (value?: number) => new NumberLiteralType(value),
+  object: (properties?: Record<string, Type>) => new ObjectType(properties),
+  string: () => new StringType(),
+  stringLiteral: (value?: string) => new StringLiteralType(value),
+  templateLiteral: (template?: TemplateValue) => new TemplateLiteral(template),
+  undefined: () => new UndefinedType(),
+  union: (types?: Type[]) => new UnionType(types),
+  unknown: () => new UnknownType(),
+  void: () => new VoidType(),
 };

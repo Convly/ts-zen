@@ -55,9 +55,27 @@ export interface Matchers<R extends void | Promise<void> = void | Promise<void>>
   is(expected: t.Type): R;
 
   /**
+   * Check if the given type is `any`
+   */
+  isAny(): R;
+
+  /**
    * Check if the given type is an array
    */
   isArray(expected?: t.ArrayType['type']): R;
+
+  /**
+   * Check if the given type is a bigint
+   */
+  isBigInt(): R;
+
+  /**
+   * Check if the given type is a bigint literal
+   * If an expected value is provided, also check the type's value
+   *
+   * @experimental
+   */
+  isBigIntLiteral(expected?: ts.PseudoBigInt): R;
 
   /**
    * Check if the given type is a boolean
@@ -66,7 +84,7 @@ export interface Matchers<R extends void | Promise<void> = void | Promise<void>>
 
   /**
    * Check if the given type is a boolean literal.
-   * If an expected value is provided, also check the type's value
+   If an expected value is provided, also check the type's value
    */
   isBooleanLiteral(expected?: boolean): R;
 
@@ -76,9 +94,19 @@ export interface Matchers<R extends void | Promise<void> = void | Promise<void>>
   isDefined(): R;
 
   /**
+   * Check if the given type is `never`
+   */
+  isNever(): R;
+
+  /**
    * Check that the current type is not defined in the test context
    */
   isNotDefined(): R;
+
+  /**
+   * Check if the given type is `null`
+   */
+  isNull(): R;
 
   /**
    * Check if the given type is a number
@@ -111,6 +139,12 @@ export interface Matchers<R extends void | Promise<void> = void | Promise<void>>
   isStringLiteral(expected?: string): R;
 
   /**
+   * Check if the given type is a template literal
+   * If an expected value is provided, also check the type's value
+   */
+  isTemplateLiteral(expected?: t.TemplateValue): R;
+
+  /**
    * Check if the given type is a type reference object.
    * If a typeName parameter is provided, also check the reference's target name.
    * If an args parameter is provided, also check the declared parameters.
@@ -118,10 +152,25 @@ export interface Matchers<R extends void | Promise<void> = void | Promise<void>>
   isTypeReference(typeName?: string, args?: Record<string, t.Type>): R;
 
   /**
+   * Check if the given type is `undefined`
+   */
+  isUndefined(): R;
+
+  /**
    * Check if the given type a union type.
    * If an expected value is provided, also check that the union's members matches the expected ones.
    */
   isUnion(expected?: t.UnionType['types']): R;
+
+  /**
+   * Check if the given type is `unknown`
+   */
+  isUnknown(): R;
+
+  /**
+   * Check if the given type is `void`
+   */
+  isVoid(): R;
 }
 
 export type MatchersObject = {

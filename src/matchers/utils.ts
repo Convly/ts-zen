@@ -144,6 +144,31 @@ export function ensureTypeReference(
   }
 }
 
+export function ensureTemplateLiteral(
+  type: ts.Type,
+  matcherName: string,
+  context: MatcherContext
+): asserts type is ts.TemplateLiteralType {
+  const isTemplateLiteral = isOfType<ts.TemplateLiteralType>(type, ts.TypeFlags.TemplateLiteral);
+
+  if (!isTemplateLiteral) {
+    const message = () =>
+      jestUtils.matcherErrorMessage(
+        jestUtils.matcherHint(matcherName, context.path, '', { isNot: context.isNot }),
+        'this matcher expects a template literal',
+        `Received: ${jestUtils.printReceived(
+          context.checker.typeToString(
+            type,
+            context.sourceFile.endOfFileToken,
+            ts.TypeFormatFlags.InTypeAlias
+          )
+        )}`
+      );
+
+    throw new ExpectationError(message);
+  }
+}
+
 export const expectLiteral = <T extends ts.Type>(
   type: T,
   flags: ts.TypeFlags,
@@ -185,11 +210,12 @@ export const expectType = <T extends ts.Type>(
   context: MatcherContext
 ) => {
   const pass = isOfType(type, flags);
+  const stringifiedFlags = stringifyTypeFlags(flags);
 
   const message = () => {
     return printUnexpectedType(
-      stringifyTypeFlags(flags),
-      stringifyTsType(context.type, context),
+      stringifiedFlags,
+      pass ? stringifiedFlags : stringifyTsType(context.type, context),
       matcherName,
       context
     );
@@ -227,3 +253,8 @@ export const getStatementFromSymbol = (sourceFile: ts.SourceFile, symbol?: ts.Sy
     return statementSymbolId === actualSymbolId;
   });
 };
+
+export const ok = (message?: () => string): ExpectResult => ({
+  pass: true,
+  message: message ?? (() => ''),
+});
