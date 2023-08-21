@@ -27,7 +27,6 @@
     "build": "tsc && tsc-alias",
     "build:watch": "tsc && (concurrently \"tsc -w\" \"tsc-alias -w\")",
     "test:matchers": "jest",
-    "prepack": "yarn build",
-    "prepublishOnly": "yarn build"
+    "prepack": "yarn build"
   }
 }
