@@ -105,8 +105,6 @@ export const getMatchers = (): MatchersObject => ({
         {} as Record<string, ts.TypeParameter>
       );
 
-    console.log(received);
-
     for (const [typeParameterName, type] of Object.entries(expected)) {
       const actualTypeParameter = received[typeParameterName];
 
