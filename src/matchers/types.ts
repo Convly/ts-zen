@@ -145,6 +145,12 @@ export interface Matchers<R extends void | Promise<void> = void | Promise<void>>
   isTemplateLiteral(expected?: t.TemplateValue): R;
 
   /**
+   * Check if the given type is a tuple
+   * If an expected value is provided, also check the type's value
+   */
+  isTuple(expected?: t.Type[]): R;
+
+  /**
    * Check if the given type is a type reference object.
    * If a typeName parameter is provided, also check the reference's target name.
    * If an args parameter is provided, also check the declared parameters.

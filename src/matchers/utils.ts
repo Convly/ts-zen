@@ -18,6 +18,10 @@ export function isArrayType(type: ts.Type, checker: ts.TypeChecker): type is ts.
   return checker.isArrayType(type);
 }
 
+export function isTupleType(type: ts.Type, checker: ts.TypeChecker): type is ts.TupleType {
+  return checker.isTupleType(type);
+}
+
 export const safeExpect = (callback: () => ExpectResult): ExpectResult => {
   try {
     return callback();

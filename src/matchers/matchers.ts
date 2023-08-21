@@ -201,6 +201,10 @@ export const getMatchers = (): MatchersObject => ({
       return this.isArray(context, expected);
     }
 
+    if (expected instanceof t.TupleType) {
+      return this.isTuple(context, expected.types);
+    }
+
     if (expected instanceof t.VoidType) {
       return this.isVoid(context);
     }
@@ -518,8 +522,8 @@ export const getMatchers = (): MatchersObject => ({
           jestUtils.matcherHint(matcherName, context.path, '', { isNot: context.isNot }),
           `The templates must contain the same number of items`,
           jestUtils.printDiffOrStringify(
-            receivedTemplate.length,
             expected.length,
+            receivedTemplate.length,
             'Expected template length',
             'Received template length',
             true
@@ -588,6 +592,88 @@ export const getMatchers = (): MatchersObject => ({
 
     return utils.ok(() =>
       jestUtils.matcherHint(matcherName, context.path, '', { isNot: context.isNot })
+    );
+  },
+
+  isTuple(context, expected) {
+    const matcherName = 'isTuple';
+    const expectedAsString = `[${expected?.map((e) => e.toString()).join(', ')}]`;
+
+    ensureDefined(context.type, matcherName, context);
+
+    if (!utils.isTupleType(context.type, context.checker)) {
+      return {
+        pass: false,
+        message: () => {
+          return utils.printUnexpectedType(
+            expectedAsString,
+            utils.stringifyTsType(context.type, context),
+            matcherName,
+            context
+          );
+        },
+      };
+    }
+
+    if (!expected) {
+      return utils.ok(() =>
+        jestUtils.matcherHint(matcherName, context.path, expectedAsString, { isNot: context.isNot })
+      );
+    }
+
+    const elements = context.checker.getTypeArguments(context.type);
+
+    if (elements.length !== expected.length) {
+      throw new ExpectationError(() =>
+        jestUtils.matcherErrorMessage(
+          jestUtils.matcherHint(
+            matcherName,
+            context.path,
+            `[${expected.map((e) => e.toString()).join(', ')}]`,
+            { isNot: context.isNot }
+          ),
+          `The expected and received tuples must have the same length`,
+          jestUtils.printDiffOrStringify(
+            expected.length,
+            elements.length,
+            'Expected length',
+            'Received length',
+            true
+          )
+        )
+      );
+    }
+
+    for (let i = 0; i < expected.length; i++) {
+      const path = `${context.path}[${i}]`;
+
+      const expectedType = expected[i];
+
+      const receivedType = elements[i];
+      const receivedSymbol = receivedType.symbol ?? receivedType.aliasSymbol;
+      const receivedStatement = utils.getStatementFromSymbol(context.sourceFile, receivedSymbol);
+
+      const newContext = utils.contextFrom(context, {
+        path,
+        type: receivedType,
+        symbol: receivedSymbol,
+        statement: receivedStatement,
+      });
+
+      const expectation = utils.safeExpect(() => this.is(newContext, expectedType));
+
+      if (!expectation.pass) {
+        return expectation;
+      }
+    }
+
+    return utils.ok(
+      () =>
+        jestUtils.matcherHint(matcherName, context.path, expectedAsString, {
+          isNot: context.isNot,
+        }) +
+        '\n\n' +
+        `Received: ${jestUtils.printReceived(utils.stringifyTsType(context.type, context))}`
     );
   },
 

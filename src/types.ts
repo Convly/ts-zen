@@ -214,6 +214,24 @@ export class ArrayType extends ObjectType {
   }
 }
 
+export class TupleType extends ObjectType {
+  types?: Type[];
+
+  constructor(types?: Type[]) {
+    super(undefined, ts.ObjectFlags.Reference);
+
+    this.types = types;
+  }
+
+  toString() {
+    if (!this.types) {
+      return 'Tuple';
+    }
+
+    return `[${this.types.map((t) => t.toString()).join(', ')}]`;
+  }
+}
+
 export type TemplateValue = (string | StringType | NumberType | BigIntType)[];
 
 export class TemplateLiteral extends AbstractType<ts.TypeFlags.TemplateLiteral> {
@@ -265,6 +283,7 @@ export default {
   string: () => new StringType(),
   stringLiteral: (value?: string) => new StringLiteralType(value),
   templateLiteral: (template?: TemplateValue) => new TemplateLiteral(template),
+  tuple: (types?: Type[]) => new TupleType(types),
   undefined: () => new UndefinedType(),
   union: (types?: Type[]) => new UnionType(types),
   unknown: () => new UnknownType(),
