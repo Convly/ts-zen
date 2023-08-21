@@ -5,8 +5,8 @@
     "name": "Jean-Sébastien Herbaux",
     "url": "https://github.com/Convly"
   },
-  "main": "./lib/index.js",
-  "types": "./lib/types/index.d.ts",
+  "main": "./lib/src/index.js",
+  "types": "./lib/src/index.d.ts",
   "license": "MIT",
   "dependencies": {
     "typescript": "^5.1.6"
