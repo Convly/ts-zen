@@ -29,8 +29,7 @@
     "./tests/**/*.ts"
   ],
   "exclude": [
-    "node_modules",
-    "lib",
-    "./tests/cases"
+    "./node_modules",
+    "./lib",
   ]
 }
