@@ -68,14 +68,6 @@ export const getMatchers = (): MatchersObject => ({
       };
     }
 
-    console.log(
-      context.checker.typeToString(
-        context.type,
-        context.sourceFile.endOfFileToken,
-        ts.TypeFormatFlags.InTypeAlias
-      )
-    );
-
     type Mapper = { sources: ts.TypeParameter[]; targets: ts.Type[] };
 
     if (!('mapper' in context.type) || context.type.mapper === undefined) {
