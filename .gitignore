@@ -1,7 +1,7 @@
 # ts-zen
-lib/
-.idea/
-.vscode/
+/lib/
+/.idea/
+/.vscode/
 
 # Logs
 logs
