@@ -8,9 +8,6 @@
   "main": "./lib/src/index.js",
   "types": "./lib/src/index.d.ts",
   "license": "MIT",
-  "dependencies": {
-    "typescript": "^5.1.6"
-  },
   "devDependencies": {
     "@types/jest": "^29.5.3",
     "@types/node": "^20.4.10",
@@ -21,6 +18,7 @@
     "tsc-alias": "^1.8.7"
   },
   "peerDependencies": {
+    "typescript": "^5.1.x",
     "jest": "^29.6.2"
   },
   "scripts": {

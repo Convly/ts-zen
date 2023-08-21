@@ -31,7 +31,7 @@ export const getOptions = (
   ignoreProjectOptions = false
 ): ts.CompilerOptions => {
   if (ignoreProjectOptions) {
-    return structuredClone(customOptions);
+    return customOptions;
   }
 
   const maybeFile = ts.findConfigFile(__dirname, fs.existsSync);
@@ -49,5 +49,5 @@ export const getOptions = (
 
   const parsedConfig = convertConfigToCompilerOptions(config);
 
-  return structuredClone({ ...parsedConfig, ...customOptions });
+  return { ...parsedConfig, ...customOptions };
 };

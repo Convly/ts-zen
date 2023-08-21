@@ -66,6 +66,7 @@ export class EnumType extends AbstractType<ts.TypeFlags.Enum> {
   }
 }
 
+// TODO: Fix (doesn't match `bigint` as it should)
 export class BigIntType extends AbstractType<ts.TypeFlags.BigInt> {
   constructor() {
     super(ts.TypeFlags.BigInt);

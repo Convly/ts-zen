@@ -242,6 +242,7 @@ export const getMatchers = (): MatchersObject => ({
     );
   },
 
+  // TODO: Implement message formatting
   isBooleanLiteral(context, expected) {
     const matcherName = 'isBooleanLiteral';
 
@@ -428,6 +429,7 @@ export const getMatchers = (): MatchersObject => ({
     return this.hasArguments(context, args);
   },
 
+  // TODO: Better message formatting
   isUnion(context, expected) {
     const matcherName = 'isUnion';
 
