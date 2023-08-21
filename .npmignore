@@ -1,0 +1,12 @@
+/lib/tests
+/lib/**/*.map
+
+/.vscode/
+/.idea/
+/tests/
+/tsconfig.json
+/.prettierrc.js
+/*.log
+/jest.config.js
+/.npmignore
+/yarn.lock

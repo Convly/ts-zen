@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "CommonJS",
+    "lib": [
+      "ESNext"
+    ],
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./lib",
+    "noEmit": false,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "baseUrl": "./",
+    "paths": {
+      "@tsz/*": [
+        "src/*"
+      ]
+    },
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true
+  },
+  "include": [
+    "./src/**/*.ts",
+    "./tests/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "lib",
+    "./tests/cases"
+  ]
+}
