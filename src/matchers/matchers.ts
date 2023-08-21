@@ -292,7 +292,7 @@ export const getMatchers = (): MatchersObject => ({
     );
   },
 
-  // TODO: Implement message formatting
+  // TODO: Implement better message formatting
   isBoolean(context) {
     const matcherName = 'isBoolean';
 
@@ -487,7 +487,6 @@ export const getMatchers = (): MatchersObject => ({
     );
   },
 
-  // TODO: Better message formatting
   isTemplateLiteral(context, expected) {
     const matcherName = 'isTemplateLiteral';
 
