@@ -38,6 +38,7 @@ export interface Matchers<R extends void | Promise<void> = void | Promise<void>>
 
   /**
    * Check that the given type has arguments.
+   *
    * If an expected value is provided, also check that the type arguments matches the expected ones.
    *
    * @experimental - WIP
@@ -53,6 +54,13 @@ export interface Matchers<R extends void | Promise<void> = void | Promise<void>>
    * Generic check based on the given type
    */
   is(expected: t.Type): R;
+
+  /**
+   * Check if the given type is an anonymous object
+   *
+   * If an expected value is provided, also check the type's value
+   */
+  isAnonymousObject(expected?: Pick<t.AnonymousObjectType, 'indexes' | 'properties'>): R;
 
   /**
    * Check if the given type is `any`
@@ -71,11 +79,12 @@ export interface Matchers<R extends void | Promise<void> = void | Promise<void>>
 
   /**
    * Check if the given type is a bigint literal
+   *
    * If an expected value is provided, also check the type's value
    *
    * @experimental
    */
-  isBigIntLiteral(expected?: ts.PseudoBigInt): R;
+  isBigIntLiteral(expected?: bigint): R;
 
   /**
    * Check if the given type is a boolean
@@ -84,6 +93,7 @@ export interface Matchers<R extends void | Promise<void> = void | Promise<void>>
 
   /**
    * Check if the given type is a boolean literal.
+   *
    If an expected value is provided, also check the type's value
    */
   isBooleanLiteral(expected?: boolean): R;
@@ -92,6 +102,13 @@ export interface Matchers<R extends void | Promise<void> = void | Promise<void>>
    * Check that the current type is defined in the test context
    */
   isDefined(): R;
+
+  /**
+   * Check if the given type is a mapped type
+   *
+   * If an expected value is provided, also check the type's value
+   */
+  isMappedType(expected?: Pick<t.MappedObjectType, 'properties' | 'templateType'>): R;
 
   /**
    * Check if the given type is `never`
@@ -115,12 +132,14 @@ export interface Matchers<R extends void | Promise<void> = void | Promise<void>>
 
   /**
    * Check if the given type is a number literal
+   *
    * If an expected value is provided, also check the type's value
    */
   isNumberLiteral(expected?: number): R;
 
   /**
    * Check if the given type is an object
+   *
    * If an expected value is provided, also check that the object's properties type matches the expected ones.
    *
    * @experimental - This checker's expected value check is currently tested only on anonymous object. However, the type check should work for any kind of object.
@@ -134,25 +153,37 @@ export interface Matchers<R extends void | Promise<void> = void | Promise<void>>
 
   /**
    * Check if the given type is a string literal
+   *
    * If an expected value is provided, also check the type's value
    */
   isStringLiteral(expected?: string): R;
 
   /**
+   * Check if the given type is an ESSymbol
+   *
+   * If `expected.unique` is set to true, checks against a UniqueESSymbol instead
+   */
+  isSymbol(expected?: { unique?: boolean }): R;
+
+  /**
    * Check if the given type is a template literal
+   *
    * If an expected value is provided, also check the type's value
    */
-  isTemplateLiteral(expected?: t.TemplateValue): R;
+  isTemplateLiteral(expected?: (string | t.Type)[]): R;
 
   /**
    * Check if the given type is a tuple
+   *
    * If an expected value is provided, also check the type's value
    */
   isTuple(expected?: t.Type[]): R;
 
   /**
    * Check if the given type is a type reference object.
+   *
    * If a typeName parameter is provided, also check the reference's target name.
+   *
    * If an args parameter is provided, also check the declared parameters.
    */
   isTypeReference(typeName?: string, args?: Record<string, t.Type>): R;
@@ -164,6 +195,7 @@ export interface Matchers<R extends void | Promise<void> = void | Promise<void>>
 
   /**
    * Check if the given type a union type.
+   *
    * If an expected value is provided, also check that the union's members matches the expected ones.
    */
   isUnion(expected?: t.UnionType['types']): R;

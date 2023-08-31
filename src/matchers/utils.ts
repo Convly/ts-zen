@@ -121,6 +121,23 @@ export function ensureDefined<T>(
   }
 }
 
+export function ensureObject(
+  expected: ts.Type,
+  matcherName: string,
+  context: MatcherContext
+): asserts expected is ts.ObjectType {
+  if (!isOfType(expected, ts.TypeFlags.Object)) {
+    const message = () =>
+      jestUtils.matcherErrorMessage(
+        jestUtils.matcherHint(matcherName, context.path, '', { isNot: context.isNot }),
+        'this matcher expects a valid object type',
+        jestUtils.printWithType('Expected', expected, jestUtils.printExpected)
+      );
+
+    throw new ExpectationError(message);
+  }
+}
+
 export function ensureTypeReference(
   type: ts.Type,
   matcherName: string,

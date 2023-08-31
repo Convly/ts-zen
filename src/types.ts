@@ -1,247 +1,122 @@
-import ts from 'typescript';
+export const enum TypeKind {
+  Any,
+  Array,
+  BigInt,
+  BigIntLiteral,
+  Boolean,
+  BooleanLiteral,
+  Enum,
+  EnumLiteral,
+  Intersection,
+  Mapped,
+  Never,
+  Null,
+  Number,
+  NumberLiteral,
+  Object,
+  String,
+  StringLiteral,
+  Symbol,
+  TemplateLiteral,
+  Tuple,
+  Undefined,
+  Union,
+  Unknown,
+  Void,
+}
 
-export interface BaseType<TFlags extends ts.TypeFlags = ts.TypeFlags> {
-  flags: TFlags;
+export const enum ObjectKind {
+  Anonymous,
+  Mapped,
+}
+
+interface BaseType<T extends TypeKind> {
+  kind: T;
   toString(): string;
 }
 
-abstract class AbstractType<T extends ts.TypeFlags> implements BaseType<T> {
-  protected constructor(public readonly flags: T) {}
+export interface AnyType extends BaseType<TypeKind.Any> {}
 
-  toString() {
-    return ts.TypeFlags[this.flags];
-  }
-}
-
-abstract class AbstractLiteralType<
-  TValue,
-  TFlags extends ts.TypeFlags = ts.TypeFlags,
-> extends AbstractType<TFlags> {
-  value?: TValue;
-
-  protected constructor(flags: TFlags, value?: TValue) {
-    super(flags);
-
-    this.value = value;
-  }
-
-  toString() {
-    return this.value ? `${super.toString()}<${this.value.toString()}>` : super.toString();
-  }
-}
-
-export class AnyType extends AbstractType<ts.TypeFlags.Any> {
-  constructor() {
-    super(ts.TypeFlags.Any);
-  }
-}
-
-export class UnknownType extends AbstractType<ts.TypeFlags.Unknown> {
-  constructor() {
-    super(ts.TypeFlags.Unknown);
-  }
-}
-
-export class StringType extends AbstractType<ts.TypeFlags.String> {
-  constructor() {
-    super(ts.TypeFlags.String);
-  }
-}
-
-export class NumberType extends AbstractType<ts.TypeFlags.Number> {
-  constructor() {
-    super(ts.TypeFlags.Number);
-  }
-}
-
-export class BooleanType extends AbstractType<ts.TypeFlags.Boolean> {
-  constructor() {
-    super(ts.TypeFlags.Boolean);
-  }
-}
-
-export class EnumType extends AbstractType<ts.TypeFlags.Enum> {
-  constructor() {
-    super(ts.TypeFlags.Enum);
-  }
-}
-
-// TODO: Fix (doesn't match `bigint` as it should)
-export class BigIntType extends AbstractType<ts.TypeFlags.BigInt> {
-  constructor() {
-    super(ts.TypeFlags.BigInt);
-  }
-}
-
-export class StringLiteralType extends AbstractLiteralType<string, ts.TypeFlags.StringLiteral> {
-  constructor(value?: string) {
-    super(ts.TypeFlags.StringLiteral, value);
-  }
-}
-
-export class NumberLiteralType extends AbstractLiteralType<number, ts.TypeFlags.NumberLiteral> {
-  constructor(value?: number) {
-    super(ts.TypeFlags.NumberLiteral, value);
-  }
-}
-
-export class BooleanLiteralType extends AbstractLiteralType<boolean, ts.TypeFlags.BooleanLiteral> {
-  constructor(value?: boolean) {
-    super(ts.TypeFlags.BooleanLiteral, value);
-  }
-}
-
-export class EnumLiteralType extends AbstractLiteralType<BaseType, ts.TypeFlags.EnumLiteral> {
-  constructor(value?: BaseType) {
-    super(ts.TypeFlags.EnumLiteral, value);
-  }
-}
-
-/**
- * @experimental
- */
-export class BigIntLiteralType extends AbstractLiteralType<
-  ts.PseudoBigInt,
-  ts.TypeFlags.BigIntLiteral
-> {
-  constructor(value?: ts.PseudoBigInt) {
-    super(ts.TypeFlags.BigIntLiteral, value);
-  }
-}
-
-export class VoidType extends AbstractType<ts.TypeFlags.Void> {
-  constructor() {
-    super(ts.TypeFlags.Void);
-  }
-}
-
-export class UndefinedType extends AbstractType<ts.TypeFlags.Undefined> {
-  constructor() {
-    super(ts.TypeFlags.Undefined);
-  }
-}
-
-export class NullType extends AbstractType<ts.TypeFlags.Null> {
-  constructor() {
-    super(ts.TypeFlags.Null);
-  }
-}
-
-export class NeverType extends AbstractType<ts.TypeFlags.Never> {
-  constructor() {
-    super(ts.TypeFlags.Never);
-  }
-}
-
-export class ObjectType extends AbstractType<ts.TypeFlags.Object> {
-  objectFlags?: ts.ObjectFlags;
-  properties?: Record<string, Type>;
-
-  constructor(properties?: Record<string, Type>, objectFlags?: ts.ObjectFlags) {
-    super(ts.TypeFlags.Object);
-
-    this.properties = properties;
-    this.objectFlags = objectFlags;
-  }
-
-  toString() {
-    if (this.properties === undefined) {
-      return super.toString();
-    }
-
-    const propertiesAsString: string = JSON.stringify(
-      Object.entries(this.properties).reduce(
-        (acc, [key, type]) => ({ ...acc, [key]: type.toString() }),
-        {}
-      ),
-      null,
-      2
-    );
-
-    return `${super.toString()}<${propertiesAsString}>`;
-  }
-}
-
-export class UnionType extends AbstractType<ts.TypeFlags.Union> {
-  types?: Type[];
-
-  constructor(types?: Type[]) {
-    super(ts.TypeFlags.Union);
-
-    this.types = types;
-  }
-
-  toString() {
-    if (this.types === undefined) {
-      return super.toString();
-    }
-
-    const possibleTypesAsString: string = this.types.map((type) => type.toString()).join(' | ');
-
-    return `${super.toString()}<${possibleTypesAsString}>`;
-  }
-}
-
-export class IntersectionType extends AbstractType<ts.TypeFlags.Intersection> {
-  constructor() {
-    super(ts.TypeFlags.Intersection);
-  }
-}
-
-export class UnionOrIntersectionType extends AbstractType<ts.TypeFlags.UnionOrIntersection> {
-  constructor() {
-    super(ts.TypeFlags.UnionOrIntersection);
-  }
-}
-
-export class ArrayType extends ObjectType {
+export interface ArrayType extends BaseType<TypeKind.Array> {
   type?: Type;
-
-  constructor(type?: Type) {
-    super(undefined, ts.ObjectFlags.Reference);
-
-    this.type = type;
-  }
-
-  toString() {
-    if (!this.type) {
-      return 'Array';
-    }
-
-    const referencedTypeAsString: string = this.type.toString();
-
-    return `Array<${referencedTypeAsString}>`;
-  }
 }
 
-export class TupleType extends ObjectType {
+export interface BigIntType extends BaseType<TypeKind.BigInt> {}
+
+export interface BigIntLiteralType extends BaseType<TypeKind.BigIntLiteral> {
+  value?: bigint;
+}
+
+export interface BooleanType extends BaseType<TypeKind.Boolean> {}
+
+export interface BooleanLiteralType extends BaseType<TypeKind.BooleanLiteral> {
+  value?: boolean;
+}
+
+export interface EnumType extends BaseType<TypeKind.Enum> {}
+
+// TODO
+export interface EnumLiteralType extends BaseType<TypeKind.Enum> {
+  value?: unknown;
+}
+
+export interface IntersectionType extends BaseType<TypeKind.Intersection> {
   types?: Type[];
-
-  constructor(types?: Type[]) {
-    super(undefined, ts.ObjectFlags.Reference);
-
-    this.types = types;
-  }
-
-  toString() {
-    if (!this.types) {
-      return 'Tuple';
-    }
-
-    return `[${this.types.map((t) => t.toString()).join(', ')}]`;
-  }
 }
 
-export type TemplateValue = (string | StringType | NumberType | BigIntType)[];
+export interface NeverType extends BaseType<TypeKind.Never> {}
 
-export class TemplateLiteral extends AbstractType<ts.TypeFlags.TemplateLiteral> {
-  template?: TemplateValue;
+export interface NullType extends BaseType<TypeKind.Null> {}
 
-  constructor(template?: TemplateValue) {
-    super(ts.TypeFlags.TemplateLiteral);
+export interface NumberType extends BaseType<TypeKind.Number> {}
 
-    this.template = template;
-  }
+export interface NumberLiteralType extends BaseType<TypeKind.NumberLiteral> {
+  value?: number;
+}
+
+export type ObjectType = AnonymousObjectType | MappedObjectType;
+
+export interface StringType extends BaseType<TypeKind.String> {}
+
+export interface StringLiteralType extends BaseType<TypeKind.StringLiteral> {
+  value?: string;
+}
+
+export interface SymbolType extends BaseType<TypeKind.Symbol> {
+  unique?: boolean;
+}
+
+export interface TemplateLiteralType extends BaseType<TypeKind.TemplateLiteral> {
+  template?: (string | Type)[];
+}
+
+export interface TupleType extends BaseType<TypeKind.Tuple> {
+  types?: Type[];
+}
+
+export interface UndefinedType extends BaseType<TypeKind.Undefined> {}
+
+export interface UnionType extends BaseType<TypeKind.Union> {
+  types?: Type[];
+}
+
+export interface UnknownType extends BaseType<TypeKind.Unknown> {}
+
+export interface VoidType extends BaseType<TypeKind.Void> {}
+
+export interface BaseObjectType<T extends ObjectKind = ObjectKind.Anonymous>
+  extends BaseType<TypeKind.Object> {
+  objectKind: T;
+}
+
+export interface AnonymousObjectType extends BaseObjectType<ObjectKind.Anonymous> {
+  indexes?: Array<{ keyType: Type; type: Type }>;
+  properties?: Record<string, Type>;
+}
+
+export interface MappedObjectType extends BaseObjectType<ObjectKind.Mapped> {
+  properties?: string[];
+  templateType?: Type;
 }
 
 export type Type =
@@ -258,6 +133,7 @@ export type Type =
   | BooleanLiteralType
   | EnumLiteralType
   | BigIntLiteralType
+  | SymbolType
   | VoidType
   | UndefinedType
   | NullType
@@ -265,27 +141,202 @@ export type Type =
   | ObjectType
   | UnionType
   | IntersectionType
-  | UnionOrIntersectionType
-  | TemplateLiteral;
+  | TupleType
+  | TemplateLiteralType;
 
 // Factories
 export default {
-  array: (type?: Type) => new ArrayType(type),
-  bigInt: () => new BigIntType(),
-  bigIntLiteral: (value?: ts.PseudoBigInt) => new BigIntLiteralType(value),
-  boolean: () => new BooleanType(),
-  booleanLiteral: (value?: boolean) => new BooleanLiteralType(value),
-  never: () => new NeverType(),
-  null: () => new NullType(),
-  number: () => new NumberType(),
-  numberLiteral: (value?: number) => new NumberLiteralType(value),
-  object: (properties?: Record<string, Type>) => new ObjectType(properties),
-  string: () => new StringType(),
-  stringLiteral: (value?: string) => new StringLiteralType(value),
-  templateLiteral: (template?: TemplateValue) => new TemplateLiteral(template),
-  tuple: (types?: Type[]) => new TupleType(types),
-  undefined: () => new UndefinedType(),
-  union: (types?: Type[]) => new UnionType(types),
-  unknown: () => new UnknownType(),
-  void: () => new VoidType(),
+  array: (type?: Type): ArrayType => ({
+    kind: TypeKind.Array,
+    type,
+    toString() {
+      return type ? `Array<${type.toString()}>` : 'Array';
+    },
+  }),
+
+  bigInt: (): BigIntType => ({
+    kind: TypeKind.BigInt,
+    toString() {
+      return 'bigint';
+    },
+  }),
+
+  bigIntLiteral: (value?: bigint): BigIntLiteralType => ({
+    kind: TypeKind.BigIntLiteral,
+    value,
+    toString() {
+      return value ? String(value) : 'BigIntLiteral';
+    },
+  }),
+
+  boolean: (): BooleanType => ({
+    kind: TypeKind.Boolean,
+    toString() {
+      return 'boolean';
+    },
+  }),
+
+  booleanLiteral: (value?: boolean): BooleanLiteralType => ({
+    kind: TypeKind.BooleanLiteral,
+    value,
+    toString() {
+      return value ? String(value) : 'BooleanLiteral';
+    },
+  }),
+
+  mappedType: (
+    options?: Pick<MappedObjectType, 'properties' | 'templateType'>
+  ): MappedObjectType => ({
+    kind: TypeKind.Object,
+    objectKind: ObjectKind.Mapped,
+    ...options,
+    toString() {
+      if (!options?.properties || !options?.templateType) {
+        return 'MappedType';
+      }
+
+      const index = `[x in ${options.properties.join(' | ')}]`;
+      const templateType = options.templateType?.toString();
+
+      return `{ ${index}: ${templateType}; }`;
+    },
+  }),
+
+  never: (): NeverType => ({
+    kind: TypeKind.Never,
+    toString() {
+      return 'never';
+    },
+  }),
+
+  null: (): NullType => ({
+    kind: TypeKind.Null,
+    toString() {
+      return 'null';
+    },
+  }),
+
+  number: (): NumberType => ({
+    kind: TypeKind.Number,
+    toString() {
+      return 'number';
+    },
+  }),
+
+  numberLiteral: (value?: number): NumberLiteralType => ({
+    kind: TypeKind.NumberLiteral,
+    value,
+    toString() {
+      return value ? String(value) : 'NumberLiteral';
+    },
+  }),
+
+  anonymousObject: (
+    options?: Pick<AnonymousObjectType, 'indexes' | 'properties'>
+  ): AnonymousObjectType => ({
+    kind: TypeKind.Object,
+    objectKind: ObjectKind.Anonymous,
+    indexes: options?.indexes,
+    properties: options?.properties,
+    toString() {
+      const indexesAsString = Object.entries(options?.indexes ?? [])
+        .map(([key, { keyType, type }]) => `[${key}: ${keyType.toString()}]: ${type.toString()};`)
+        .join(' ');
+
+      const propertiesAsString = Object.entries(options?.properties ?? [])
+        .map(([key, type]) => `"${key}": ${type};`)
+        .join(' ');
+
+      const objectMembersAsString = [propertiesAsString, indexesAsString]
+        .filter((s) => s) // only keep non-empty strings
+        .join(' ');
+
+      return objectMembersAsString ? `{ ${objectMembersAsString} }` : 'object';
+    },
+  }),
+
+  object: (object?: ObjectType): ObjectType => {
+    const defaultObject = {
+      kind: TypeKind.Object,
+      objectKind: ObjectKind.Anonymous,
+      toString() {
+        return 'object';
+      },
+    } satisfies AnonymousObjectType;
+
+    return object ?? defaultObject;
+  },
+
+  string: (): StringType => ({
+    kind: TypeKind.String,
+    toString() {
+      return 'string';
+    },
+  }),
+
+  stringLiteral: (value?: string): StringLiteralType => ({
+    kind: TypeKind.StringLiteral,
+    value,
+    toString() {
+      return value ? `"${value}"` : 'StringLiteral';
+    },
+  }),
+
+  symbol: (unique: boolean = false): SymbolType => ({
+    kind: TypeKind.Symbol,
+    unique,
+    toString() {
+      return unique ? 'UniqueESSymbol' : 'ESSymbol';
+    },
+  }),
+
+  templateLiteral: (template?: (string | Type)[]): TemplateLiteralType => ({
+    kind: TypeKind.TemplateLiteral,
+    template,
+    toString() {
+      const templateAsString = template?.reduce(
+        (str, item) => (typeof item === 'string' ? str + item : str + `\${${item.toString()}}`),
+        ''
+      );
+
+      return templateAsString ? `"${templateAsString}"` : 'TemplateLiteral';
+    },
+  }),
+
+  tuple: (types?: Type[]): TupleType => ({
+    kind: TypeKind.Tuple,
+    types,
+    toString() {
+      return `[${(types ?? []).map((type) => type.toString()).join(', ')}]`;
+    },
+  }),
+
+  undefined: (): UndefinedType => ({
+    kind: TypeKind.Undefined,
+    toString() {
+      return 'undefined';
+    },
+  }),
+
+  union: (types?: Type[]): UnionType => ({
+    kind: TypeKind.Union,
+    types,
+    toString() {
+      return types ? types.map((type) => type.toString()).join(' | ') : 'union';
+    },
+  }),
+
+  unknown: (): UnknownType => ({
+    kind: TypeKind.Unknown,
+    toString() {
+      return 'unknown';
+    },
+  }),
+
+  void: (): VoidType => ({
+    kind: TypeKind.Void,
+    toString() {
+      return 'void';
+    },
+  }),
 };
