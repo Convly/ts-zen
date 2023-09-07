@@ -1,18 +1,22 @@
 import ts from 'typescript';
+import path from 'path';
 
 import { FILENAME } from '@tsz/constants';
 import { getOptions } from '@tsz/load/options';
+
+type GetSourceFileFn = ts.CompilerHost['getSourceFile'];
 
 const FILENAME_RE = new RegExp(FILENAME);
 
 export const createInlineProgram = (
   code: string,
   customCompilerOptions?: ts.CompilerOptions,
-  ignoreProjectOptions?: boolean
+  ignoreProjectOptions?: boolean,
+  baseUrl?: string
 ) => {
-  type GetSourceFileFn = ts.CompilerHost['getSourceFile'];
-
   let sourceFile!: ts.SourceFile;
+
+  const filePath = path.resolve(baseUrl ?? process.cwd(), FILENAME);
 
   const getSourceFile: GetSourceFileFn = (filename: string, languageVersion, ...args) => {
     if (!FILENAME_RE.test(filename)) {
@@ -20,17 +24,18 @@ export const createInlineProgram = (
     }
 
     if (sourceFile === undefined) {
-      sourceFile = ts.createSourceFile(FILENAME, code, languageVersion);
+      sourceFile = ts.createSourceFile(filePath, code, languageVersion);
     }
 
     return sourceFile;
   };
 
   const options = getOptions(customCompilerOptions, ignoreProjectOptions);
+
   const compilerHost = ts.createCompilerHost(options);
   const customCompilerHost = { ...compilerHost, getSourceFile };
 
-  const program = ts.createProgram([FILENAME], options, customCompilerHost);
+  const program = ts.createProgram([filePath], options, customCompilerHost);
 
   return { program, sourceFile };
 };

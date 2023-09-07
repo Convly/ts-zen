@@ -13,11 +13,16 @@ import { createAssertTypeSelector } from '@tsz/assert';
 import { createInlineProgram } from './program';
 
 export function load(source: Source) {
-  const { ignoreProjectOptions, compilerOptions, raw } = source.getOptions() ?? {};
+  const { ignoreProjectOptions, compilerOptions, raw, baseUrl } = source.getOptions() ?? {};
 
   const code = sanitizeCode([raw ?? ''].concat(source.toString()).join(ts.sys.newLine));
 
-  const { program, sourceFile } = createInlineProgram(code, compilerOptions, ignoreProjectOptions);
+  const { program, sourceFile } = createInlineProgram(
+    code,
+    compilerOptions,
+    ignoreProjectOptions,
+    baseUrl
+  );
   const checker = program.getTypeChecker();
   const symbols = parseSymbols(checker, sourceFile);
   const diagnostics: ts.Diagnostic[] = getProgramDiagnostics(program, sourceFile);
