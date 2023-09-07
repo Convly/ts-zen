@@ -4,25 +4,25 @@ import { type AssertTypeSelector, fromFile, t } from '@tsz/index';
 import type * as ObjectCase from './definitions/object.tsz';
 
 describe('Object', () => {
-  let assertType!: AssertTypeSelector<typeof ObjectCase>;
+  let type!: AssertTypeSelector<typeof ObjectCase>;
 
   beforeAll(() => {
-    assertType = fromFile(path.join(__dirname, 'definitions', 'object.tsz.ts'));
+    type = fromFile(path.join(__dirname, 'definitions', 'object.tsz.ts'));
   });
 
   describe('Anonymous', () => {
     test('Only Indexes', () => {
-      assertType('AnonymousObjectWithOnlyIndex_1').isAnonymousObject({
+      type('AnonymousObjectWithOnlyIndex_1').isAnonymousObject({
         indexes: [{ keyType: t.string(), type: t.number() }],
         properties: {},
       });
 
-      assertType('AnonymousObjectWithOnlyIndex_2').isAnonymousObject({
+      type('AnonymousObjectWithOnlyIndex_2').isAnonymousObject({
         indexes: [{ keyType: t.string(), type: t.union([t.number(), t.string()]) }],
         properties: {},
       });
 
-      assertType('AnonymousObjectWithOnlyIndexes_1').isAnonymousObject({
+      type('AnonymousObjectWithOnlyIndexes_1').isAnonymousObject({
         indexes: [
           { keyType: t.string(), type: t.number() },
           { keyType: t.symbol(), type: t.string() },
@@ -31,7 +31,7 @@ describe('Object', () => {
     });
 
     test('Only Properties', () => {
-      assertType('AnonymousObjectWithOnlyProperties').isAnonymousObject({
+      type('AnonymousObjectWithOnlyProperties').isAnonymousObject({
         properties: {
           foo: t.stringLiteral('bar'),
           bar: t.boolean(),
@@ -45,12 +45,12 @@ describe('Object', () => {
 
   describe('Mapped', () => {
     test('Basic', () => {
-      assertType('MappedObjectWithSimpleTemplateType').isMappedType({
+      type('MappedObjectWithSimpleTemplateType').isMappedType({
         properties: ['foo', 'barr', 'baz'],
         templateType: t.boolean(),
       });
 
-      assertType('MappedObjectWithKeyFilter').isMappedType();
+      type('MappedObjectWithKeyFilter').isMappedType();
     });
 
     test.skip('Index Filtering', () => {});
