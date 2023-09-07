@@ -17,6 +17,7 @@ export interface Source {
 export interface SourceOptions {
   compilerOptions?: ts.CompilerOptions;
   ignoreProjectOptions?: boolean;
+  baseUrl?: string;
   raw?: string;
 }
 

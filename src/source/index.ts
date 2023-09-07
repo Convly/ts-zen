@@ -6,7 +6,7 @@ import { SourceKind, Source, SourceOptions, RecordTypeDeclaration } from '@tsz/s
 
 const ALLOWED_FILE_EXT = ['.ts', '.d.ts'];
 
-export function createSourceFromFile(filePath: string, options?: SourceOptions): Source {
+export function createSourceFromFile(filePath: string, options: SourceOptions = {}): Source {
   const stats = fs.statSync(filePath);
 
   if (!stats.isFile()) {
@@ -24,6 +24,13 @@ export function createSourceFromFile(filePath: string, options?: SourceOptions):
   }
 
   const fileContent = fs.readFileSync(filePath).toString();
+
+  /**
+   * Make sure the source file baseUrl is set to the file base directory (if not overridden)
+   */
+  if (typeof options.baseUrl === 'undefined') {
+    options.baseUrl = path.dirname(path.resolve(filePath));
+  }
 
   return {
     kind: SourceKind.File,
