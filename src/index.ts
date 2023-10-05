@@ -21,7 +21,7 @@ export type * from '@tsz/assert';
 export type * from '@tsz/source';
 export type * from '@tsz/load';
 
-export type * from '@tsz/types';
+export * from '@tsz/types';
 export { default as t } from '@tsz/types';
 
 export { fromFile, fromRecord, fromRaw };

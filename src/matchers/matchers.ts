@@ -198,6 +198,7 @@ export const getMatchers = (): MatchersObject => ({
       case t.TypeKind.Tuple:
         return this.isTuple(context, expected.types);
       case t.TypeKind.Intersection:
+        return this.isIntersection(context, expected.types);
       case t.TypeKind.Enum:
         break;
     }
@@ -406,7 +407,7 @@ export const getMatchers = (): MatchersObject => ({
     const matcherName = 'isBigIntLiteral';
 
     utils.ensureDefined(context.type, matcherName, context);
-    ts.ObjectFlags;
+
     return utils.expectLiteral(
       context.type,
       ts.TypeFlags.BigIntLiteral,
@@ -470,6 +471,66 @@ export const getMatchers = (): MatchersObject => ({
       `Received: ${jestUtils.printReceived(utils.stringifyTsType(context.type, context))}`;
 
     return { pass, message };
+  },
+
+  isIntersection(context, expected) {
+    const matcherName = 'isIntersection';
+
+    utils.ensureDefined(context.type, matcherName, context);
+
+    const typeExpectation = utils.expectType(
+      context.type,
+      ts.TypeFlags.Intersection,
+      matcherName,
+      context
+    );
+
+    if (!typeExpectation.pass || expected === undefined) {
+      return typeExpectation;
+    }
+
+    const intersection = context.type as ts.IntersectionType;
+
+    if (expected.length !== intersection.types.length) {
+      throw new ExpectationError(() =>
+        jestUtils.matcherErrorMessage(
+          jestUtils.matcherHint(matcherName, context.path, '', { isNot: context.isNot }),
+          `The intersection must contain the same number of items`,
+          jestUtils.printDiffOrStringify(
+            expected.length,
+            intersection.types.length,
+            'Expected intersection length',
+            'Received intersection length',
+            true
+          )
+        )
+      );
+    }
+
+    for (let i = 0; i < expected.length; i++) {
+      const expectedType = expected[i];
+
+      const receivedType = intersection.types[i];
+      const receivedSymbol = receivedType.symbol ?? receivedType.aliasSymbol;
+      const receivedStatement = utils.getStatementFromSymbol(context.sourceFile, receivedSymbol);
+
+      const path = `${context.path}[${i}]`;
+
+      const newContext = utils.contextFrom(context, {
+        type: receivedType,
+        symbol: receivedSymbol,
+        statement: receivedStatement,
+        path,
+      });
+
+      const expectation = utils.safeExpect(() => this.is(newContext, expectedType));
+
+      if (!expectation.pass) {
+        throw new ExpectationError(expectation.message);
+      }
+    }
+
+    return utils.ok();
   },
 
   isMappedType(context) {
@@ -569,7 +630,6 @@ export const getMatchers = (): MatchersObject => ({
 
     utils.ensureDefined(context.type, matcherName, context);
 
-    // TODO: Redirect to various object checks instead of only checking raw object -- Once Object.(anonymous|array|interface|class|...) are available
     const typeExpectation = utils.expectType(
       context.type,
       ts.TypeFlags.Object,
@@ -580,6 +640,8 @@ export const getMatchers = (): MatchersObject => ({
     if (!typeExpectation.pass || !expected) {
       return typeExpectation;
     }
+
+    const type = context.type as ts.ObjectType;
 
     switch (expected.objectKind) {
       case t.ObjectKind.Anonymous:
@@ -592,58 +654,26 @@ export const getMatchers = (): MatchersObject => ({
       case t.ObjectKind.Mapped:
         return this.isMappedType(context);
       default:
-        break;
+        // @ts-ignore
+        if (expected.objectKind !== type.objectFlags) {
+          throw new ExpectationError(
+            () =>
+              jestUtils.matcherHint(matcherName, context.path, undefined, {
+                isNot: context.isNot,
+              }) +
+              '\n\n' +
+              jestUtils.printDiffOrStringify(
+                expected.objectKind,
+                type.objectFlags,
+                'Expected',
+                'Received',
+                true
+              )
+          );
+        }
     }
 
     return utils.ok();
-
-    // const objectProperties = context.type.getProperties();
-    //
-    // const expectedKeys = Object.keys(expected.properties);
-    // const objectKeys = objectProperties.map((prop) => prop.escapedName.toString());
-    //
-    // const keysInObjectButNotInExpected = utils.arrayDiff(objectKeys, expectedKeys);
-    // const keysInExpectedButNotInObject = utils.arrayDiff(expectedKeys, objectKeys);
-    //
-    // if (keysInObjectButNotInExpected.length > 0 || keysInExpectedButNotInObject.length > 0) {
-    //   return {
-    //     pass: false,
-    //     message: () =>
-    //       jestUtils.matcherErrorMessage(
-    //         jestUtils.matcherHint(matcherName, context.path, '', { isNot: context.isNot }),
-    //         'Object properties mismatch',
-    //         jestUtils.printDiffOrStringify(
-    //           expectedKeys,
-    //           objectKeys,
-    //           'Expected keys',
-    //           'Received keys',
-    //           true
-    //         )
-    //       ),
-    //   };
-    // }
-    //
-    // for (const symbol of objectProperties) {
-    //   const propertyName = symbol.escapedName.toString();
-    //   const path = `${context.path}.${propertyName}`;
-    //
-    //   const expectedPropertyValue = expected.properties[propertyName];
-    //   const type = context.checker.getTypeOfSymbol(symbol);
-    //   const statement = utils.getStatementFromSymbol(context.sourceFile, symbol);
-    //   const newContext = utils.contextFrom(context, { type, symbol, statement, path });
-    //
-    //   const propertyExpectation = utils.safeExpect(() =>
-    //     this.is(newContext, expectedPropertyValue)
-    //   );
-    //
-    //   if (!propertyExpectation.pass) {
-    //     return propertyExpectation;
-    //   }
-    // }
-    //
-    // return utils.ok(() =>
-    //   jestUtils.matcherHint(matcherName, context.path, '', { isNot: context.isNot })
-    // );
   },
 
   isString(context) {

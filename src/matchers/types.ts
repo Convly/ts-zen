@@ -104,6 +104,13 @@ export interface Matchers<R extends void | Promise<void> = void | Promise<void>>
   isDefined(): R;
 
   /**
+   * Check that the current type is an intersection
+   *
+   * If an expected value is provided, also check that the intersection's members matches the expected ones.
+   */
+  isIntersection(expected?: t.IntersectionType['types']): R;
+
+  /**
    * Check if the given type is a mapped type
    *
    * If an expected value is provided, also check the type's value
